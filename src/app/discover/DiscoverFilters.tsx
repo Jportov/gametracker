@@ -7,12 +7,18 @@ type Props = {
   genres: { id: number; name: string; slug: string }[]
 }
 
+const ORDERING_OPTIONS = [
+  { value: "-rating", label: "Melhor avaliados" },
+  { value: "-released", label: "Mais recentes" },
+  { value: "-added", label: "Mais populares" },
+  { value: "name", label: "A–Z" },
+]
+
 export default function DiscoverFilters({ genres }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  // Cria uma nova URL mantendo os params existentes e atualizando só o que mudou
   const updateFilter = useCallback(
     (key: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString())
@@ -26,40 +32,66 @@ export default function DiscoverFilters({ genres }: Props) {
     [router, pathname, searchParams]
   )
 
+  const activeGenre = searchParams.get("genre") ?? ""
+  const activeOrdering = searchParams.get("ordering") ?? "-rating"
+
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="space-y-3">
+      {/* Busca */}
       <input
         name="search"
         defaultValue={searchParams.get("search") ?? ""}
         placeholder="Buscar jogos..."
-        className="bg-zinc-800 text-white placeholder-zinc-500 rounded-lg px-4 py-2 text-sm flex-1 min-w-48 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        className="w-full bg-zinc-800/80 text-white placeholder-zinc-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 border border-zinc-700/50"
         onKeyDown={(e) => {
           if (e.key === "Enter") updateFilter("search", e.currentTarget.value)
         }}
         onBlur={(e) => updateFilter("search", e.currentTarget.value)}
       />
 
-      <select
-        defaultValue={searchParams.get("genre") ?? ""}
-        onChange={(e) => updateFilter("genre", e.target.value)}
-        className="bg-zinc-800 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-      >
-        <option value="">Todos os gêneros</option>
-        {genres.map((g) => (
-          <option key={g.id} value={g.slug}>{g.name}</option>
+      {/* Ordenação — chips com scroll horizontal no mobile */}
+      <div className="flex gap-2 overflow-x-auto scrollbar-none -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
+        {ORDERING_OPTIONS.map(({ value, label }) => (
+          <button
+            key={value}
+            onClick={() => updateFilter("ordering", value)}
+            className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+              activeOrdering === value
+                ? "bg-violet-500/20 border-violet-500 text-violet-400"
+                : "bg-zinc-800/60 border-zinc-700/50 text-zinc-400 hover:text-white hover:border-zinc-500"
+            }`}
+          >
+            {label}
+          </button>
         ))}
-      </select>
+      </div>
 
-      <select
-        defaultValue={searchParams.get("ordering") ?? ""}
-        onChange={(e) => updateFilter("ordering", e.target.value)}
-        className="bg-zinc-800 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-      >
-        <option value="-rating">Melhor avaliados</option>
-        <option value="-released">Mais recentes</option>
-        <option value="-added">Mais populares</option>
-        <option value="name">A–Z</option>
-      </select>
+      {/* Gêneros — chips com scroll horizontal no mobile */}
+      <div className="flex gap-2 overflow-x-auto scrollbar-none -mx-4 px-4 md:mx-0 md:px-0 md:flex-wrap">
+        <button
+          onClick={() => updateFilter("genre", "")}
+          className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+            activeGenre === ""
+              ? "bg-violet-500/20 border-violet-500 text-violet-400"
+              : "bg-zinc-800/60 border-zinc-700/50 text-zinc-400 hover:text-white hover:border-zinc-500"
+          }`}
+        >
+          Todos
+        </button>
+        {genres.map((g) => (
+          <button
+            key={g.id}
+            onClick={() => updateFilter("genre", g.slug)}
+            className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-colors border ${
+              activeGenre === g.slug
+                ? "bg-violet-500/20 border-violet-500 text-violet-400"
+                : "bg-zinc-800/60 border-zinc-700/50 text-zinc-400 hover:text-white hover:border-zinc-500"
+            }`}
+          >
+            {g.name}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

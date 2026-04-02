@@ -24,7 +24,7 @@ async function GameGrid({ searchParams }: { searchParams: { search?: string; gen
   <EmptyState
     title="Nenhum jogo encontrado"
     description="Tente outros termos de busca ou remova os filtros."
-    action={<Link href="/discover" className="text-emerald-400 hover:underline text-sm">Limpar filtros</Link>}
+    action={<Link href="/discover" className="text-violet-400 hover:underline text-sm">Limpar filtros</Link>}
   />
 )
   }

@@ -111,7 +111,7 @@ export default function AddToLibraryButton({ gameId }: Props) {
             <button
               key={status}
               onClick={() => handleSelect(status)}
-              className={`w-full text-left px-4 py-2 text-sm hover:bg-zinc-700 transition ${userGame?.status === status ? "text-emerald-400" : "text-zinc-300"}`}
+              className={`w-full text-left px-4 py-2 text-sm hover:bg-zinc-700 transition ${userGame?.status === status ? "text-violet-400" : "text-zinc-300"}`}
             >
               {STATUS_LABELS[status]}
             </button>

@@ -18,7 +18,7 @@ export default async function SimilarGames({ gameId }: Props) {
           <Link
             key={game.id}
             href={`/game/${game.id}`}
-            className="group block bg-zinc-800 rounded-xl overflow-hidden hover:ring-2 hover:ring-emerald-500 transition"
+            className="group block bg-zinc-800 rounded-xl overflow-hidden hover:ring-2 hover:ring-violet-500 transition"
           >
             <div className="relative aspect-video">
               {game.background_image ? (

@@ -42,7 +42,7 @@ export default function ScreenshotGallery({ screenshots }: Props) {
           <button
             key={s.id}
             onClick={() => setLightboxIndex(index)}
-            className="relative aspect-video rounded-lg overflow-hidden group focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="relative aspect-video rounded-lg overflow-hidden group focus:outline-none focus:ring-2 focus:ring-violet-500"
           >
             <Image
               src={s.image}

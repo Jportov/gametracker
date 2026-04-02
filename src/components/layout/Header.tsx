@@ -4,13 +4,27 @@ import Link from "next/link"
 
 export default function Header() {
   return (
-    <header className="h-14 border-b border-zinc-800 flex items-center px-6 gap-4">
-      <Link href="/" className="text-emerald-400 font-semibold text-lg tracking-tight hover:text-emerald-300 transition-colors">
+    <header
+      className="sticky top-0 z-40 h-14 border-b border-zinc-800/60 flex items-center px-4 md:px-6 gap-4"
+      style={{
+        background: "rgba(8, 12, 24, 0.88)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        paddingTop: "var(--safe-top)",
+      }}
+    >
+      <Link
+        href="/"
+        className="text-violet-400 font-bold text-lg tracking-tight hover:text-violet-300 transition-colors"
+      >
         GameTracker
       </Link>
-      <nav className="flex gap-4 ml-4">
+
+      {/* Nav links — só visível em desktop */}
+      <nav className="hidden md:flex gap-5 ml-4">
         <NavLinks />
       </nav>
+
       <div className="ml-auto">
         <UserMenu />
       </div>

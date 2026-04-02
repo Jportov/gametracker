@@ -10,37 +10,36 @@ const STATUS_LABELS: Record<GameStatus, string> = {
   playing: "Jogando",
   completed: "Zerado",
   dropped: "Abandonado",
-  wishlist: "Lista de desejos",
+  wishlist: "Desejado",
 }
 
 const STATUS_COLORS: Record<GameStatus, string> = {
-  playing: "text-emerald-400",
-  completed: "text-blue-400",
-  dropped: "text-red-400",
-  wishlist: "text-yellow-400",
+  playing:   "bg-emerald-500",
+  completed: "bg-blue-500",
+  dropped:   "bg-red-500",
+  wishlist:  "bg-yellow-500",
 }
 
 export default async function ProfilePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
   if (!user) redirect("/")
 
   const userGames = await getUserGamesServer()
 
   const enriched: EnrichedUserGame[] = await Promise.all(
-    userGames.slice(0, 5).map(async (g) => {
+    userGames.slice(0, 9).map(async (g) => {
       const { name, background_image } = await getGameBasic(g.game_id)
       return { ...g, game_name: name, game_image: background_image }
     })
   )
 
   const stats = {
-    total: userGames.length,
-    playing: userGames.filter((g) => g.status === "playing").length,
+    total:     userGames.length,
+    playing:   userGames.filter((g) => g.status === "playing").length,
     completed: userGames.filter((g) => g.status === "completed").length,
-    dropped: userGames.filter((g) => g.status === "dropped").length,
-    wishlist: userGames.filter((g) => g.status === "wishlist").length,
+    dropped:   userGames.filter((g) => g.status === "dropped").length,
+    wishlist:  userGames.filter((g) => g.status === "wishlist").length,
   }
 
   const completionRate = stats.total > 0
@@ -48,99 +47,181 @@ export default async function ProfilePage() {
     : 0
 
   const avatar = user.user_metadata?.avatar_url
-  const name = user.user_metadata?.full_name ?? user.email
+  const name   = user.user_metadata?.full_name ?? user.email
 
   return (
-    <main className="space-y-8 max-w-2xl">
-      {/* Cabeçalho do perfil */}
-      <div className="flex items-center gap-5">
-        {avatar ? (
-          <Image
-            src={avatar}
-            alt={name}
-            width={72}
-            height={72}
-            className="rounded-full"
-          />
-        ) : (
-          <div className="w-18 h-18 rounded-full bg-zinc-700 flex items-center justify-center text-2xl">
-            🎮
+    <main className="space-y-8 pb-4">
+
+      {/* ── Hero do perfil ── */}
+      <div className="relative rounded-2xl overflow-hidden">
+        {/* Fundo com blur das capas dos jogos */}
+        <div className="absolute inset-0">
+          {enriched[0]?.game_image ? (
+            <Image
+              src={enriched[0].game_image}
+              alt=""
+              fill
+              sizes="100vw"
+              className="object-cover scale-110 blur-2xl opacity-20"
+            />
+          ) : (
+            <div
+              className="w-full h-full"
+              style={{ background: "linear-gradient(135deg, #0f1629 0%, #1a2a5e 100%)" }}
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#080c18]/60 to-[#080c18]" />
+        </div>
+
+        {/* Conteúdo do hero */}
+        <div className="relative px-6 pt-10 pb-8 flex flex-col items-center text-center gap-4">
+          {avatar ? (
+            <div className="ring-4 ring-violet-500/40 rounded-full shadow-2xl">
+              <Image
+                src={avatar}
+                alt={name ?? ""}
+                width={88}
+                height={88}
+                className="rounded-full"
+              />
+            </div>
+          ) : (
+            <div className="w-22 h-22 rounded-full bg-surface2 ring-4 ring-violet-500/30 flex items-center justify-center text-3xl shadow-2xl">
+              🎮
+            </div>
+          )}
+          <div>
+            <h1 className="text-2xl font-bold text-white">{name}</h1>
+            <p className="text-muted text-sm mt-0.5">{user.email}</p>
           </div>
-        )}
-        <div>
-          <h1 className="text-2xl font-bold text-white">{name}</h1>
-          <p className="text-zinc-400 text-sm">{user.email}</p>
+
+          {/* Contagem rápida inline */}
+          <div className="flex items-center gap-6 text-sm">
+            <div className="text-center">
+              <p className="text-white font-bold text-lg">{stats.total}</p>
+              <p className="text-muted text-xs">jogos</p>
+            </div>
+            <div className="w-px h-8 bg-border" />
+            <div className="text-center">
+              <p className="text-emerald-400 font-bold text-lg">{stats.playing}</p>
+              <p className="text-muted text-xs">jogando</p>
+            </div>
+            <div className="w-px h-8 bg-border" />
+            <div className="text-center">
+              <p className="text-blue-400 font-bold text-lg">{stats.completed}</p>
+              <p className="text-muted text-xs">zerados</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Cards de estatísticas */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {[
-          { label: "Total de jogos", value: stats.total, color: "text-white" },
-          { label: "Jogando", value: stats.playing, color: "text-emerald-400" },
-          { label: "Zerados", value: stats.completed, color: "text-blue-400" },
-          { label: "Abandonados", value: stats.dropped, color: "text-red-400" },
-          { label: "Lista de desejos", value: stats.wishlist, color: "text-yellow-400" },
-          { label: "Taxa de conclusão", value: `${completionRate}%`, color: "text-purple-400" },
-        ].map(({ label, value, color }) => (
-          <div key={label} className="bg-zinc-800 rounded-xl p-4">
-            <p className={`text-2xl font-bold ${color}`}>{value}</p>
-            <p className="text-zinc-400 text-sm mt-1">{label}</p>
-          </div>
-        ))}
-      </div>
-
-      {/* Barra de progresso de conclusão */}
+      {/* ── Barra de progresso ── */}
       {stats.total > 0 && (
-        <div className="space-y-2">
+        <div className="space-y-3 px-1">
           <div className="flex justify-between text-sm">
-            <span className="text-zinc-400">Progresso geral</span>
-            <span className="text-zinc-300">{stats.completed} de {stats.total} zerados</span>
+            <span className="text-muted font-medium">Progresso na biblioteca</span>
+            <span className="text-white font-semibold">{completionRate}% zerado</span>
           </div>
-          <div className="w-full bg-zinc-800 rounded-full h-2">
-            <div
-              className="bg-emerald-500 h-2 rounded-full transition-all duration-500"
-              style={{ width: `${completionRate}%` }}
-            />
+          {/* Barra segmentada por status */}
+          <div className="w-full h-3 rounded-full overflow-hidden flex gap-0.5 bg-surface2">
+            {stats.playing > 0 && (
+              <div
+                className="bg-emerald-500 h-full rounded-l-full transition-all"
+                style={{ width: `${(stats.playing / stats.total) * 100}%` }}
+              />
+            )}
+            {stats.completed > 0 && (
+              <div
+                className="bg-blue-500 h-full transition-all"
+                style={{ width: `${(stats.completed / stats.total) * 100}%` }}
+              />
+            )}
+            {stats.wishlist > 0 && (
+              <div
+                className="bg-yellow-500 h-full transition-all"
+                style={{ width: `${(stats.wishlist / stats.total) * 100}%` }}
+              />
+            )}
+            {stats.dropped > 0 && (
+              <div
+                className="bg-red-500 h-full rounded-r-full transition-all"
+                style={{ width: `${(stats.dropped / stats.total) * 100}%` }}
+              />
+            )}
+          </div>
+          <div className="flex gap-4 text-xs text-muted">
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-500" />Jogando</span>
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-blue-500" />Zerado</span>
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-yellow-500" />Desejado</span>
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-red-500" />Abandonado</span>
           </div>
         </div>
       )}
 
-      {/* Jogos recentes */}
+      {/* ── Estante de capas ── */}
       {enriched.length > 0 && (
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-white">Adicionados recentemente</h2>
-          <div className="space-y-2">
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-white">Minha estante</h2>
+            <Link href="/library" className="text-sm text-violet-400 hover:text-violet-300 transition-colors">
+              Ver biblioteca →
+            </Link>
+          </div>
+
+          <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
             {enriched.map((game) => (
               <Link
                 key={game.id}
                 href={`/game/${game.game_id}`}
-                className="flex items-center gap-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg px-3 py-2 transition"
+                className="relative group rounded-xl overflow-hidden aspect-[2/3] bg-surface2 block"
               >
-                <div className="relative w-16 h-10 rounded overflow-hidden shrink-0 bg-zinc-700">
-                  {game.game_image && (
-                    <Image
-                      src={game.game_image}
-                      alt={game.game_name}
-                      fill
-                      sizes="64px"
-                      className="object-cover"
-                    />
-                  )}
-                </div>
-                <span className="text-sm text-white flex-1 line-clamp-1">{game.game_name}</span>
-                <span className={`text-xs shrink-0 ${STATUS_COLORS[game.status]}`}>
-                  {STATUS_LABELS[game.status]}
-                </span>
+                {game.game_image ? (
+                  <Image
+                    src={game.game_image}
+                    alt={game.game_name}
+                    fill
+                    sizes="(max-width: 768px) 33vw, 16vw"
+                    className="object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-muted text-xs p-2 text-center">
+                    {game.game_name}
+                  </div>
+                )}
+                {/* Gradiente + badge de status */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className={`absolute top-1.5 right-1.5 w-2.5 h-2.5 rounded-full ring-2 ring-black/40 ${STATUS_COLORS[game.status]}`} />
+                <p className="absolute bottom-0 left-0 right-0 px-1.5 pb-1.5 text-[10px] font-medium text-white opacity-0 group-hover:opacity-100 transition-opacity line-clamp-2 leading-tight">
+                  {game.game_name}
+                </p>
               </Link>
             ))}
           </div>
-          {userGames.length > 5 && (
-            <Link href="/library" className="text-emerald-400 hover:underline text-sm">
-              Ver todos os {userGames.length} jogos →
-            </Link>
+
+          {/* Legenda de status */}
+          {enriched.length > 0 && (
+            <div className="flex gap-3 text-xs text-muted flex-wrap">
+              {(Object.keys(STATUS_LABELS) as GameStatus[]).map((s) => (
+                <span key={s} className="flex items-center gap-1">
+                  <span className={`w-2 h-2 rounded-full ${STATUS_COLORS[s]}`} />
+                  {STATUS_LABELS[s]}
+                </span>
+              ))}
+            </div>
           )}
         </section>
+      )}
+
+      {/* Empty state */}
+      {userGames.length === 0 && (
+        <div className="text-center py-16 space-y-3">
+          <p className="text-5xl">🎮</p>
+          <h3 className="text-lg font-semibold text-white">Sua estante está vazia</h3>
+          <p className="text-muted text-sm">Adicione jogos para começar sua coleção.</p>
+          <Link href="/discover" className="inline-block mt-2 text-violet-400 hover:underline text-sm">
+            Explorar jogos
+          </Link>
+        </div>
       )}
     </main>
   )

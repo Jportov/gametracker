@@ -16,7 +16,7 @@ export default function ExpandableText({ text, maxLines = 6 }: Props) {
       </p>
       <button
         onClick={() => setExpanded((v) => !v)}
-        className="text-emerald-400 hover:text-emerald-300 text-sm transition-colors"
+        className="text-violet-400 hover:text-violet-300 text-sm transition-colors"
       >
         {expanded ? "Mostrar menos" : "Ler mais"}
       </button>
