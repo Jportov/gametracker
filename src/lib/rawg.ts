@@ -1,4 +1,4 @@
-import { Game, GameDetail, GamesResponse, Genre } from "@/types/game"
+import { GameDetail, GamesResponse, Genre } from "@/types/game"
 
 const BASE_URL = "https://api.rawg.io/api"
 const API_KEY = process.env.RAWG_API_KEY
@@ -56,5 +56,13 @@ export async function getGameScreenshots(id: string): Promise<{ results: { id: n
     next: { revalidate: 3600 },
   })
   if (!res.ok) throw new Error("Falha ao buscar screenshots")
+  return res.json()
+}
+
+export async function getSimilarGames(id: string): Promise<GamesResponse> {
+  const res = await fetch(buildUrl(`/games/${id}/game-series`), {
+    next: { revalidate: 3600 },
+  })
+  if (!res.ok) throw new Error("Falha ao buscar jogos similares")
   return res.json()
 }

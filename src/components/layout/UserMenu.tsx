@@ -26,10 +26,10 @@ export default function UserMenu() {
 
   return (
     <div className="flex items-center gap-3">
-      {user.user_metadata.avatar_url && (
+      {user.user_metadata?.avatar_url && (
         <Image
           src={user.user_metadata.avatar_url}
-          alt={user.user_metadata.full_name ?? "Avatar"}
+          alt={user.user_metadata?.full_name ?? "Avatar"}
           width={32}
           height={32}
           className="rounded-full"

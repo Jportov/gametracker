@@ -1,22 +1,32 @@
 import { getGames, getGenres } from "@/lib/rawg"
 import GameCard from "@/components/game/GameCard"
 import GameCardSkeleton from "@/components/game/GameCardSkeleton"
+import DiscoverFilters from "./DiscoverFilters"
 import { Suspense } from "react"
+import EmptyState from "@/components/ui/EmptyState"
+import Link from "next/link"
 
 type Props = {
-  searchParams: { search?: string; genre?: string; ordering?: string }
+  searchParams: Promise<{ search?: string; genre?: string; ordering?: string }>
 }
 
-async function GameGrid({ searchParams }: Props) {
+async function GameGrid({ searchParams }: { searchParams: { search?: string; genre?: string; ordering?: string } }) {
+  const resolvedParams = searchParams
   const data = await getGames({
-    search: searchParams.search,
-    genres: searchParams.genre,
-    ordering: searchParams.ordering || "-rating",
+    search: resolvedParams.search,
+    genres: resolvedParams.genre,
+    ordering: resolvedParams.ordering || "-rating",
     page_size: 20,
   })
 
   if (data.results.length === 0) {
-    return <p className="text-zinc-400 col-span-full">Nenhum jogo encontrado.</p>
+    return (
+  <EmptyState
+    title="Nenhum jogo encontrado"
+    description="Tente outros termos de busca ou remova os filtros."
+    action={<Link href="/discover" className="text-emerald-400 hover:underline text-sm">Limpar filtros</Link>}
+  />
+)
   }
 
   return (
@@ -39,52 +49,19 @@ function SkeletonGrid() {
 }
 
 export default async function DiscoverPage({ searchParams }: Props) {
+  const resolvedParams = await searchParams
   const { results: genres } = await getGenres()
 
   return (
     <main className="space-y-6">
       <h1 className="text-2xl font-semibold text-white">Descobrir</h1>
 
-      <form className="flex flex-wrap gap-3">
-        <input
-          name="search"
-          defaultValue={searchParams.search}
-          placeholder="Buscar jogos..."
-          className="bg-zinc-800 text-white placeholder-zinc-500 rounded-lg px-4 py-2 text-sm flex-1 min-w-48 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        />
-
-        <select
-          name="genre"
-          defaultValue={searchParams.genre}
-          className="bg-zinc-800 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        >
-          <option value="">Todos os gêneros</option>
-          {genres.map((g) => (
-            <option key={g.id} value={g.slug}>{g.name}</option>
-          ))}
-        </select>
-
-        <select
-          name="ordering"
-          defaultValue={searchParams.ordering}
-          className="bg-zinc-800 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-        >
-          <option value="-rating">Melhor avaliados</option>
-          <option value="-released">Mais recentes</option>
-          <option value="-added">Mais populares</option>
-          <option value="name">A–Z</option>
-        </select>
-
-        <button
-          type="submit"
-          className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg px-5 py-2 text-sm font-medium transition"
-        >
-          Buscar
-        </button>
-      </form>
+      <Suspense>
+        <DiscoverFilters genres={genres} />
+      </Suspense>
 
       <Suspense fallback={<SkeletonGrid />}>
-        <GameGrid searchParams={searchParams} />
+        <GameGrid searchParams={resolvedParams} />
       </Suspense>
     </main>
   )

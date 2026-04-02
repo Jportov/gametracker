@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/context/AuthContext"
 import { getUserGame, addUserGame, updateUserGame, removeUserGame } from "@/lib/user-games"
 import { GameStatus, UserGame } from "@/types/game"
@@ -16,16 +17,17 @@ type Props = { gameId: number }
 
 export default function AddToLibraryButton({ gameId }: Props) {
   const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [userGame, setUserGame] = useState<UserGame | null>(null)
   const [loading, setLoading] = useState(() => !!user)
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
     if (!user) return
-    getUserGame(gameId).then((data: UserGame | null) => {
-      setUserGame(data)
-      setLoading(false)
-    })
+    getUserGame(gameId)
+      .then((data: UserGame | null) => setUserGame(data))
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [user, gameId])
 
   if (authLoading || loading) {
@@ -44,8 +46,12 @@ export default function AddToLibraryButton({ gameId }: Props) {
     setOpen(false)
     const previous = userGame
 
-    // optimistic update — atualiza a UI antes da resposta do servidor
-    setUserGame((prev) => prev ? { ...prev, status } : null)
+    // optimistic update — funciona tanto para adição quanto para atualização
+    setUserGame((prev) =>
+      prev
+        ? { ...prev, status }
+        : { id: "", user_id: "", game_id: gameId, status, rating: null, notes: null, created_at: "" }
+    )
 
     try {
       if (!userGame) {
@@ -55,8 +61,9 @@ export default function AddToLibraryButton({ gameId }: Props) {
         const updated = await updateUserGame(userGame.id, status)
         setUserGame(updated)
       }
+      router.refresh() // re-executa Server Components (Library, Profile)
     } catch {
-      setUserGame(previous) // reverte se der erro
+      setUserGame(previous)
     }
   }
 
@@ -65,12 +72,13 @@ export default function AddToLibraryButton({ gameId }: Props) {
     if (!userGame) return
     const previous = userGame
 
-    setUserGame(null) // optimistic update
+    setUserGame(null)
 
     try {
       await removeUserGame(userGame.id)
+      router.refresh()
     } catch {
-      setUserGame(previous) // reverte se der erro
+      setUserGame(previous)
     }
   }
 
