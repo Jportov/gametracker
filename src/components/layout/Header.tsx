@@ -1,3 +1,5 @@
+import UserMenu from "./UserMenu";
+
 /* eslint-disable @next/next/no-html-link-for-pages */
 export default function Header() {
   return (
@@ -17,9 +19,7 @@ export default function Header() {
         </a>
       </nav>
       <div className="ml-auto">
-        <button className="text-sm text-zinc-400 border border-zinc-700 px-3 py-1.5 rounded-md hover:border-zinc-500 hover:text-white transition-colors">
-          Sign in
-        </button>
+        <UserMenu />
       </div>
     </header>
   )

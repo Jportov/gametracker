@@ -33,3 +33,14 @@ export interface Genre {
   games_count: number
   image_background: string
 }
+export type GameStatus = "playing" | "completed" | "dropped" | "wishlist"
+
+export interface UserGame {
+  id: string
+  user_id: string
+  game_id: number
+  status: GameStatus
+  rating: number | null
+  notes: string | null
+  created_at: string
+}
