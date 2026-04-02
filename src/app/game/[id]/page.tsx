@@ -6,6 +6,7 @@ import PlatformIcon from "@/components/game/PlatformIcon"
 import AddToLibraryButton from "@/components/game/AddToLibraryButton"
 import ScreenshotGallery from "@/components/game/ScreenshotGallery"
 import SimilarGames from "@/components/game/SimilarGames"
+import ExpandableText from "@/components/game/ExpandableText"
 import type { Metadata } from "next"
 
 
@@ -85,9 +86,7 @@ export default async function GamePage({ params }: Props) {
       {game.description_raw && (
         <section className="space-y-2">
           <h2 className="text-lg font-semibold text-white">Sobre</h2>
-          <p className="text-zinc-400 text-sm leading-relaxed whitespace-pre-line line-clamp-6">
-            {game.description_raw}
-          </p>
+          <ExpandableText text={game.description_raw} />
         </section>
       )}
 

@@ -1,8 +1,24 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getUserGamesServer } from "@/lib/user-games.server"
+import { getGameBasic } from "@/lib/rawg"
+import { EnrichedUserGame, GameStatus } from "@/types/game"
 import Image from "next/image"
 import Link from "next/link"
+
+const STATUS_LABELS: Record<GameStatus, string> = {
+  playing: "Jogando",
+  completed: "Zerado",
+  dropped: "Abandonado",
+  wishlist: "Lista de desejos",
+}
+
+const STATUS_COLORS: Record<GameStatus, string> = {
+  playing: "text-emerald-400",
+  completed: "text-blue-400",
+  dropped: "text-red-400",
+  wishlist: "text-yellow-400",
+}
 
 export default async function ProfilePage() {
   const supabase = await createClient()
@@ -11,6 +27,13 @@ export default async function ProfilePage() {
   if (!user) redirect("/")
 
   const userGames = await getUserGamesServer()
+
+  const enriched: EnrichedUserGame[] = await Promise.all(
+    userGames.slice(0, 5).map(async (g) => {
+      const { name, background_image } = await getGameBasic(g.game_id)
+      return { ...g, game_name: name, game_image: background_image }
+    })
+  )
 
   const stats = {
     total: userGames.length,
@@ -84,18 +107,31 @@ export default async function ProfilePage() {
       )}
 
       {/* Jogos recentes */}
-      {userGames.length > 0 && (
+      {enriched.length > 0 && (
         <section className="space-y-3">
           <h2 className="text-lg font-semibold text-white">Adicionados recentemente</h2>
           <div className="space-y-2">
-            {userGames.slice(0, 5).map((game) => (
+            {enriched.map((game) => (
               <Link
                 key={game.id}
                 href={`/game/${game.game_id}`}
-                className="flex items-center justify-between bg-zinc-800 hover:bg-zinc-700 rounded-lg px-4 py-3 transition"
+                className="flex items-center gap-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg px-3 py-2 transition"
               >
-                <span className="text-sm text-white">Jogo #{game.game_id}</span>
-                <span className="text-xs text-zinc-400 capitalize">{game.status}</span>
+                <div className="relative w-16 h-10 rounded overflow-hidden shrink-0 bg-zinc-700">
+                  {game.game_image && (
+                    <Image
+                      src={game.game_image}
+                      alt={game.game_name}
+                      fill
+                      sizes="64px"
+                      className="object-cover"
+                    />
+                  )}
+                </div>
+                <span className="text-sm text-white flex-1 line-clamp-1">{game.game_name}</span>
+                <span className={`text-xs shrink-0 ${STATUS_COLORS[game.status]}`}>
+                  {STATUS_LABELS[game.status]}
+                </span>
               </Link>
             ))}
           </div>

@@ -5,12 +5,20 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/context/AuthContext"
 import { getUserGame, addUserGame, updateUserGame, removeUserGame } from "@/lib/user-games"
 import { GameStatus, UserGame } from "@/types/game"
+import { toast } from "sonner"
 
 const STATUS_LABELS: Record<GameStatus, string> = {
   playing: "Jogando",
   completed: "Zerado",
   dropped: "Abandonado",
   wishlist: "Lista de desejos",
+}
+
+const STATUS_COLORS: Record<GameStatus, string> = {
+  playing: "bg-emerald-600 hover:bg-emerald-500",
+  completed:  "bg-blue-600 hover:bg-blue-500",
+  dropped: "bg-red-700 hover:bg-red-600",
+  wishlist: "bg-yellow-600 hover:bg-yellow-500",
 }
 
 type Props = { gameId: number }
@@ -57,13 +65,16 @@ export default function AddToLibraryButton({ gameId }: Props) {
       if (!userGame) {
         const created = await addUserGame(gameId, status)
         setUserGame(created)
+        toast.success(`Adicionado como "${STATUS_LABELS[status]}"`)
       } else {
         const updated = await updateUserGame(userGame.id, status)
         setUserGame(updated)
+        toast.success(`Status atualizado para "${STATUS_LABELS[status]}"`)
       }
-      router.refresh() // re-executa Server Components (Library, Profile)
+      router.refresh()
     } catch {
       setUserGame(previous)
+      toast.error("Erro ao salvar. Tente novamente.")
     }
   }
 
@@ -77,8 +88,10 @@ export default function AddToLibraryButton({ gameId }: Props) {
     try {
       await removeUserGame(userGame.id)
       router.refresh()
+      toast.success("Jogo removido da biblioteca")
     } catch {
       setUserGame(previous)
+      toast.error("Erro ao remover. Tente novamente.")
     }
   }
 
@@ -86,7 +99,7 @@ export default function AddToLibraryButton({ gameId }: Props) {
     <div className="relative">
       <button
         onClick={() => setOpen((v) => !v)}
-        className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2"
+        className={`${userGame ? STATUS_COLORS[userGame.status] : "bg-zinc-700 hover:bg-zinc-600"} text-white text-sm font-medium px-4 py-2 rounded-lg transition flex items-center gap-2`}
       >
         {userGame ? STATUS_LABELS[userGame.status] : "+ Adicionar à biblioteca"}
         <span className="text-xs">▾</span>

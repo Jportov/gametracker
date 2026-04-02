@@ -44,3 +44,8 @@ export interface UserGame {
   notes: string | null
   created_at: string
 }
+
+export interface EnrichedUserGame extends UserGame {
+  game_name: string
+  game_image: string | null
+}

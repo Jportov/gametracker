@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation"
 import { createClient } from "@/lib/supabase/server"
 import { getUserGamesServer } from "@/lib/user-games.server"
+import { getGameBasic } from "@/lib/rawg"
+import { EnrichedUserGame } from "@/types/game"
 import LibraryTabs from "./LibraryTabs"
 
 export default async function LibraryPage() {
@@ -11,12 +13,19 @@ export default async function LibraryPage() {
 
   const userGames = await getUserGamesServer()
 
+  const enriched: EnrichedUserGame[] = await Promise.all(
+    userGames.map(async (g) => {
+      const { name, background_image } = await getGameBasic(g.game_id)
+      return { ...g, game_name: name, game_image: background_image }
+    })
+  )
+
   const stats = {
-    total: userGames.length,
-    playing: userGames.filter((g) => g.status === "playing").length,
-    completed: userGames.filter((g) => g.status === "completed").length,
-    dropped: userGames.filter((g) => g.status === "dropped").length,
-    wishlist: userGames.filter((g) => g.status === "wishlist").length,
+    total: enriched.length,
+    playing: enriched.filter((g) => g.status === "playing").length,
+    completed: enriched.filter((g) => g.status === "completed").length,
+    dropped: enriched.filter((g) => g.status === "dropped").length,
+    wishlist: enriched.filter((g) => g.status === "wishlist").length,
   }
 
   return (
@@ -40,7 +49,7 @@ export default async function LibraryPage() {
         ))}
       </div>
 
-      <LibraryTabs userGames={userGames} />
+      <LibraryTabs userGames={enriched} />
     </main>
   )
 }

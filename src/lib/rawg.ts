@@ -59,6 +59,15 @@ export async function getGameScreenshots(id: string): Promise<{ results: { id: n
   return res.json()
 }
 
+export async function getGameBasic(id: number): Promise<{ name: string; background_image: string | null }> {
+  const res = await fetch(buildUrl(`/games/${id}`), {
+    next: { revalidate: 3600 },
+  })
+  if (!res.ok) return { name: `Jogo #${id}`, background_image: null }
+  const data = await res.json()
+  return { name: data.name, background_image: data.background_image }
+}
+
 export async function getSimilarGames(id: string): Promise<GamesResponse> {
   const res = await fetch(buildUrl(`/games/${id}/game-series`), {
     next: { revalidate: 3600 },

@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Header from "@/components/layout/Header"
 import { AuthProvider } from "@/context/AuthContext"
+import { Toaster } from "sonner"
 import "./globals.css"
 
 export const metadata: Metadata = {
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <main className="max-w-7xl mx-auto px-6 py-8">
             {children}
           </main>
+          <Toaster position="bottom-right" theme="dark" richColors />
         </AuthProvider>
       </body>
     </html>

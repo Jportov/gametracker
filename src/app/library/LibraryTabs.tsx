@@ -1,10 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { UserGame, GameStatus } from "@/types/game"
-import EmptyState from "@/components/ui/EmptyState"
+import Image from "next/image"
 import Link from "next/link"
-
+import { EnrichedUserGame, GameStatus } from "@/types/game"
+import EmptyState from "@/components/ui/EmptyState"
 
 const TABS: { label: string; value: GameStatus | "all" }[] = [
   { label: "Todos", value: "all" },
@@ -14,7 +14,21 @@ const TABS: { label: string; value: GameStatus | "all" }[] = [
   { label: "Lista de desejos", value: "wishlist" },
 ]
 
-type Props = { userGames: UserGame[] }
+const STATUS_LABELS: Record<GameStatus, string> = {
+  playing: "Jogando",
+  completed: "Zerado",
+  dropped: "Abandonado",
+  wishlist: "Lista de desejos",
+}
+
+const STATUS_COLORS: Record<GameStatus, string> = {
+  playing: "text-emerald-400",
+  completed: "text-blue-400",
+  dropped: "text-red-400",
+  wishlist: "text-yellow-400",
+}
+
+type Props = { userGames: EnrichedUserGame[] }
 
 export default function LibraryTabs({ userGames }: Props) {
   const [activeTab, setActiveTab] = useState<GameStatus | "all">("all")
@@ -43,20 +57,33 @@ export default function LibraryTabs({ userGames }: Props) {
 
       {filtered.length === 0 ? (
         <EmptyState
-  title="Nenhum jogo aqui ainda"
-  description="Adicione jogos à sua biblioteca pela página de detalhes."
-  action={<Link href="/discover" className="text-emerald-400 hover:underline text-sm">Explorar jogos</Link>}
-/>
+          title="Nenhum jogo aqui ainda"
+          description="Adicione jogos à sua biblioteca pela página de detalhes."
+          action={<Link href="/discover" className="text-emerald-400 hover:underline text-sm">Explorar jogos</Link>}
+        />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filtered.map((game) => (
             <Link
               key={game.id}
               href={`/game/${game.game_id}`}
-              className="flex items-center justify-between bg-zinc-800 hover:bg-zinc-700 rounded-lg px-4 py-3 transition"
+              className="flex items-center gap-3 bg-zinc-800 hover:bg-zinc-700 rounded-lg px-3 py-2 transition"
             >
-              <span className="text-sm text-white">Jogo #{game.game_id}</span>
-              <span className="text-xs text-zinc-400 capitalize">{game.status}</span>
+              <div className="relative w-16 h-10 rounded overflow-hidden shrink-0 bg-zinc-700">
+                {game.game_image && (
+                  <Image
+                    src={game.game_image}
+                    alt={game.game_name}
+                    fill
+                    sizes="64px"
+                    className="object-cover"
+                  />
+                )}
+              </div>
+              <span className="text-sm text-white flex-1 line-clamp-1">{game.game_name}</span>
+              <span className={`text-xs shrink-0 ${STATUS_COLORS[game.status]}`}>
+                {STATUS_LABELS[game.status]}
+              </span>
             </Link>
           ))}
         </div>
