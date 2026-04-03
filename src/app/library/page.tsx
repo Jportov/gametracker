@@ -1,4 +1,10 @@
+import type { Metadata } from "next"
 import { redirect } from "next/navigation"
+
+export const metadata: Metadata = {
+  title: "Minha Biblioteca — GameTracker",
+  description: "Gerencie sua coleção de jogos: jogando, zerados, abandonados e lista de desejos.",
+}
 import { createClient } from "@/lib/supabase/server"
 import { getUserGamesServer } from "@/lib/user-games.server"
 import { getGameBasic } from "@/lib/rawg"
@@ -8,7 +14,7 @@ import LibraryTabs from "./LibraryTabs"
 export default async function LibraryPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect("/")
+  if (!user) redirect("/login")
 
   const userGames = await getUserGamesServer()
 

@@ -1,4 +1,10 @@
+import type { Metadata } from "next"
 import { getGames, getGenres } from "@/lib/rawg"
+
+export const metadata: Metadata = {
+  title: "Descobrir Jogos — GameTracker",
+  description: "Explore e descubra jogos por gênero, avaliação e data de lançamento.",
+}
 import GameCard from "@/components/game/GameCard"
 import GameCardSkeleton from "@/components/game/GameCardSkeleton"
 import DiscoverFilters from "./DiscoverFilters"

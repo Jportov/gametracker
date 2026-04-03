@@ -1,4 +1,10 @@
+import type { Metadata } from "next"
 import { redirect } from "next/navigation"
+
+export const metadata: Metadata = {
+  title: "Meu Perfil — GameTracker",
+  description: "Veja suas estatísticas, progresso e estante de jogos.",
+}
 import { createClient } from "@/lib/supabase/server"
 import { getUserGamesServer } from "@/lib/user-games.server"
 import { getGameBasic } from "@/lib/rawg"
@@ -23,7 +29,7 @@ const STATUS_COLORS: Record<GameStatus, string> = {
 export default async function ProfilePage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect("/")
+  if (!user) redirect("/login")
 
   const userGames = await getUserGamesServer()
 

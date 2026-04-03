@@ -3,7 +3,6 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/context/AuthContext"
-import { signInWithGoogle } from "@/lib/auth-actions"
 
 function HomeIcon({ active }: { active: boolean }) {
   return (
@@ -85,15 +84,13 @@ export default function BottomNav() {
         })}
 
         {!loading && !user && (
-          <form action={signInWithGoogle} className="flex-1">
-            <button
-              type="submit"
-              className="w-full h-full flex flex-col items-center justify-center gap-1 py-3 min-h-[56px]"
-            >
-              <PersonIcon active={false} />
-              <span className="text-[10px] font-medium text-zinc-500">Entrar</span>
-            </button>
-          </form>
+          <Link
+            href="/login"
+            className="flex-1 flex flex-col items-center justify-center gap-1 py-3 min-h-[56px]"
+          >
+            <PersonIcon active={false} />
+            <span className="text-[10px] font-medium text-zinc-500">Entrar</span>
+          </Link>
         )}
       </div>
     </nav>
